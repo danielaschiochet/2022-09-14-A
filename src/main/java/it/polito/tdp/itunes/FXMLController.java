@@ -5,7 +5,11 @@
 package it.polito.tdp.itunes;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
+
+import it.polito.tdp.itunes.model.Album;
 import it.polito.tdp.itunes.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -34,7 +38,7 @@ public class FXMLController {
     private Button btnSet; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbA1"
-    private ComboBox<?> cmbA1; // Value injected by FXMLLoader
+    private ComboBox<Album> cmbA1; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtDurata"
     private TextField txtDurata; // Value injected by FXMLLoader
@@ -48,15 +52,80 @@ public class FXMLController {
     @FXML
     void doComponente(ActionEvent event) {
     	
+    	Album a1 = cmbA1.getValue();
+    	if(a1==null) {
+    		txtResult.appendText("Seleziona un album\n");
+    		return;
+    	}
+    	
+    	Set<Album> connessa = model.getComponenteConnessa(a1);
+    	
+    	double somma = 0.0;
+    	for(Album a: connessa) {
+    		somma+=a.getDurata();
+    	}
+    	
+    	txtResult.appendText("Dimesione componente: "+connessa.size());
+    	txtResult.appendText("\nDurata totale: "+somma+"\n");
+    	
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
     	
+    	String durataS = txtDurata.getText();
+    	
+    	if(durataS.equals("")) {
+    		txtResult.appendText("Valore 'd' obbligatorio\n");
+    		return;
+    	}
+    	
+    	Double duration;
+    	try {
+    		duration = Double.parseDouble(durataS);
+    	}catch(NumberFormatException e) {
+    		txtResult.appendText("La durata deve essere un valore numerico\n");
+    		return;
+    	}
+    	
+    	model.creaGrafo(duration);
+    	
+    	txtResult.appendText("Grafo creato correttamente!\n");
+    	
+    	List<Album> vertici = model.getAlbums();
+    	this.cmbA1.getItems().clear();
+    	this.cmbA1.getItems().addAll(vertici);
+    	
     }
 
     @FXML
     void doEstraiSet(ActionEvent event) {
+    	
+    	Album a1 = cmbA1.getValue();
+    	if(a1==null) {
+    		txtResult.appendText("Seleziona un album\n");
+    		return;
+    	}
+    	
+    	Set<Album> connessa = model.getComponenteConnessa(a1);
+    	
+    	String dTotS = this.txtX.getText();
+    	if(dTotS.equals("")) {
+    		txtResult.appendText("Valore 'dTot' obbligatorio\n");
+    		return;
+    	}
+    	
+    	Double dTot;
+    	try {
+    		dTot = Double.parseDouble(dTotS);
+    	}catch(NumberFormatException e) {
+    		txtResult.appendText("La durata totale deve essere un valore numerico\n");
+    		return;
+    	}
+    	
+    	Set<Album> ottimi = model.ricercaSetMassimo(a1, dTot);
+    	
+    	txtResult.appendText(ottimi+"\n");
 
     }
 
